@@ -1,4 +1,14 @@
-local mdl = Model( "models/player/items/soldier/hat_third_nr.mdl" )
+local offset_ang = Angle( 15, 0, -15 )
+local offset_pos = Vector( -4.8, -1.5, 1 )
+local model_path = "models/player/items/soldier/hat_third_nr.mdl"
+
+if not file.Exists( model_path, "GAME" ) then
+    model_path = "models/player/items/humans/top_hat.mdl"
+    offset_ang = Angle( -15, 0, 10 )
+    offset_pos = Vector( -1.1, -3, -1 )
+end
+
+local mdl = Model( model_path )
 
 local PLAYER = FindMetaTable( "Player" )
 function PLAYER:IsErickMaksimets()
@@ -29,17 +39,16 @@ local function PosHat( hat, ply )
     if (attachment_id > 0) then
         local attachment = ply:GetAttachment( attachment_id )
 
-        local ang = attach.Ang
+        local ang = attachment.Ang
         hat:SetModelScale( 1.025, 0 )
         ang:RotateAroundAxis( ang:Right(), 20 )
 
-        return (attachment.Pos + (ang:Forward() * -4.8) + (ang:Up() * -1.5) + (ang:Right() * 1)), ang
+        return (attachment.Pos + (ang:Forward() * offset_pos[1]) + (ang:Up() * offset_pos[2]) + (ang:Right() * offset_pos[3])), ang
     end
 
     return vector_zero, angle_zero
 end
 
-local offset = Angle( 15, 0, -15 )
 hook.Add("CreateClientsideRagdoll", "Maksimets_Hat", function( ply, ragdoll )
     if ply:IsPlayer() and ply:IsErickMaksimets() and ply:IsErickMaksimetsModel() then
         function ragdoll:RenderOverride( flags )
@@ -47,7 +56,7 @@ hook.Add("CreateClientsideRagdoll", "Maksimets_Hat", function( ply, ragdoll )
             HatThink(ragdoll, function( hat )
                 local pos, ang = PosHat( hat, ragdoll)
                 hat:SetRenderOrigin( pos )
-                hat:SetRenderAngles( ang + offset )
+                hat:SetRenderAngles( ang + offset_ang )
                 hat:DrawModel( flags )
             end)
         end
@@ -60,7 +69,7 @@ hook.Add("PostPlayerDraw", "Maksimets_Hat", function( ply, flags )
         HatThink(ply, function( hat )
             local pos, ang = PosHat( hat, ply )
             hat:SetRenderOrigin( pos )
-            hat:SetRenderAngles( ang + offset )
+            hat:SetRenderAngles( ang + offset_ang )
             hat:DrawModel( flags )
         end)
     elseif IsValid( ply.Hat ) then
